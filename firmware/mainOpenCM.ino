@@ -57,7 +57,7 @@ void loop() {
   // 4. Safety Watchdog: мониторинг тока и ошибок
   check_safety_limits();
 
-  delay(5); // Промышленный цикл управления = ~200 Гц
+  delay(5); 
 }
 
 void check_safety_limits() {
