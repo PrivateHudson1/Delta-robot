@@ -1,0 +1,25 @@
+{
+  "name": "OpenCM 9.04",
+  "url": "https://emanual.robotis.com/docs/en/parts/controller/opencm904/",
+  "vendor": "ROBOTIS",
+  "build": {
+    "core": "stm32",
+    "cpu": "cortex-m3",
+    "f_cpu": "72000000L",
+    "mcu": "stm32f103cbt6",
+    "variant": "opencm904",
+    "extra_flags": "-DSTM32F1"
+  },
+  "debug": {
+    "jlink_device": "STM32F103CB",
+    "onboard_tools": ["stlink"],
+    "openocd_target": "stm32f1x"
+  },
+  "frameworks": ["arduino"],
+  "upload": {
+    "maximum_ram_size": 20480,
+    "maximum_size": 131072,
+    "protocol": "stlink",
+    "protocols": ["stlink", "jlink", "blackmagic"]
+  }
+}

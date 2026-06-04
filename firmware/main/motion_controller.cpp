@@ -1,6 +1,6 @@
 // firmware/motion_controller.cpp
 // Реализация контроллера движения
-#include "../headers/motion_controller.h"
+#include "motion_controller.h"
 #include <math.h>
 
 MotionController::MotionController() {

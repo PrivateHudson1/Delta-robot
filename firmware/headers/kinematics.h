@@ -9,7 +9,7 @@ const float upper_leg = 450.0; // Длина верхнего плеча (вед
 const float lower_leg = 800.0; // Длина нижнего штанг (параллелограмм)
 
 bool KinematicsEngine::inverse_kinematics(float point[3], float angles[3]) {
-  // Координаты в системе координат робота (Z вниз)
+  // Координаты в системе коорд инат робота (Z вниз)
   float x = point[0];
   float y = point[1];
   float z = -point[2]; // Инверсия, если Z направлена вниз
