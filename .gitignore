@@ -1,0 +1,18 @@
+# PlatformIO build artifacts
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# VS Code
+.vscode/
+
+# Arduino
+build/
+*.ino.pre/
+*.elf
+*.o
+
+# System files
+.DS_Store
+Thumbs.db
+*.log
