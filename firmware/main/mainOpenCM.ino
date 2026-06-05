@@ -163,10 +163,11 @@ void process_commands() {
     
     if (comm.command_available()) {
         last_heartbeat = millis();
-        CommunicationProtocol::Command cmd = comm.get_command();
+        Command cmd = comm.get_command();
         
         switch (cmd.type) {
-            case CommunicationProtocol::CMD_MOVE_ABS:
+            // Движение
+            case CMD_MOVE_ABS:
                 if (cmd.param_count >= 3 && !emergency_active) {
                     float x = cmd.params[0];
                     float y = cmd.params[1];
@@ -183,42 +184,50 @@ void process_commands() {
                 }
                 break;
                 
-            case CommunicationProtocol::CMD_MOVE_REL:
+            case CMD_MOVE_REL:
                 if (cmd.param_count >= 3 && !emergency_active) {
                     planner.move_rel(cmd.params[0], cmd.params[1], cmd.params[2]);
                     comm.send_ack(cmd.type, true);
                 }
                 break;
                 
-            case CommunicationProtocol::CMD_STOP:
+            case CMD_STOP:
                 planner.stop();
                 emergency_stop();
                 comm.send_ack(cmd.type, true);
                 break;
                 
-            case CommunicationProtocol::CMD_GET_POS:
+            case CMD_GET_POS:
                 comm.send_position(current_position[0], current_position[1], current_position[2]);
                 break;
                 
-            case CommunicationProtocol::CMD_VACUUM_ON:
-                vacuum_active = true;
-                comm.send_ack(cmd.type, true);
-                break;
-                
-            case CommunicationProtocol::CMD_VACUUM_OFF:
-                vacuum_active = false;
-                digitalWrite(VACUUM_PIN, LOW);
-                comm.send_ack(cmd.type, true);
-                break;
-                
-            case CommunicationProtocol::CMD_HOME:
+            case CMD_HOME:
                 if (!emergency_active) {
                     planner.move_to(0, 0, -600);
                     comm.send_ack(cmd.type, true);
                 }
                 break;
+            
+            // Вакуум
+            case CMD_VACUUM_ON:
+                vacuum_active = true;
+                digitalWrite(VACUUM_PIN, HIGH);
+                comm.send_ack(cmd.type, true);
+                break;
                 
-            case CommunicationProtocol::CMD_RESET:
+            case CMD_VACUUM_OFF:
+                vacuum_active = false;
+                digitalWrite(VACUUM_PIN, LOW);
+                comm.send_ack(cmd.type, true);
+                break;
+            
+            // Системные команды
+            case CMD_STATUS:
+                comm.send_status(!planner.is_moving(), emergency_active, 
+                                 safety.get_event_description(safety.get_last_event()).c_str());
+                break;
+                
+            case CMD_RESET:
                 if (!safety.is_emergency_stop_active()) {
                     emergency_active = false;
                     safety.reset();
@@ -229,26 +238,59 @@ void process_commands() {
                     comm.send_error("Cannot reset: E-stop active");
                 }
                 break;
-                
-            case CommunicationProtocol::CMD_SET_SPEED:
+            
+            // Настройки
+            case CMD_SET_SPEED:
                 if (cmd.param_count >= 2) {
                     planner.set_default_params(cmd.params[0], cmd.params[1]);
                     comm.send_ack(cmd.type, true);
                 }
                 break;
                 
-            case CommunicationProtocol::CMD_STATUS:
-                comm.send_status(!planner.is_moving(), emergency_active, 
-                                 safety.get_event_description(safety.get_last_event()).c_str());
+            case CMD_SET_PID:
+                if (cmd.param_count >= 4) {
+                    int id = (int)cmd.params[0];
+                    if (id >= 1 && id <= 3) {
+                        dxl.writeControlTableItem(ControlTableItem::P_GAIN, id, (uint16_t)cmd.params[1]);
+                        dxl.writeControlTableItem(ControlTableItem::I_GAIN, id, (uint16_t)cmd.params[2]);
+                        dxl.writeControlTableItem(ControlTableItem::D_GAIN, id, (uint16_t)cmd.params[3]);
+                        comm.send_ack(cmd.type, true);
+                    } else {
+                        comm.send_error("Invalid motor ID");
+                    }
+                }
+                break;
+            
+                // Протокол
+            case CMD_PROTO_BIN:
+                comm.setMode(PROTOCOL_MODE_BINARY);
+                comm.send_ack(cmd.type, true);
                 break;
                 
+            case CMD_PROTO_TEXT:
+                comm.setMode(PROTOCOL_MODE_TEXT);
+                comm.send_ack(cmd.type, true);
+                break;
+            
+
+            case CMD_SAVE_PARAMS:
+                comm.send_ack(cmd.type, true);
+                break;
+                
+            case CMD_LOAD_PARAMS:
+                comm.send_ack(cmd.type, true);
+                break;
+                
+            case CMD_FACTORY_RESET:
+                comm.send_ack(cmd.type, true);
+                break;
+            
             default:
                 comm.send_error("Unknown command");
                 break;
         }
     }
 }
-
 void emergency_stop() {
     emergency_active = true;
     
