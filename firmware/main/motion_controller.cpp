@@ -2,7 +2,7 @@
 #include "motion_controller.h"
 #include <math.h>
 
-#define PI 3.14159265358979323846
+// #define PI 3.14159265358979323846
 
 // Конструктор
 MotionController::MotionController() {
