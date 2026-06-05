@@ -1,8 +1,4 @@
-// firmware/motion_controller.h
-// Контроллер движения для дельта-робота
-// Поддерживает S-образные, трапецеидальные и циклоидальные траектории
-// Версия: 1.0.0
-
+// firmware/headers/motion_controller.h
 #ifndef MOTION_CONTROLLER_H
 #define MOTION_CONTROLLER_H
 
@@ -10,18 +6,17 @@
 
 class MotionController {
 public:
-    // Типы профилей траекторий
+    // Типы профилей движения
     enum ProfileType {
-        PROFILE_TRAPEZOIDAL = 0,  // Трапецеидальный (классический)
-        PROFILE_S_CURVE = 1,      // S-образный (плавный, рекомендуется)
-        PROFILE_CYCLOIDAL = 2     // Циклоидальный (минимальные вибрации)
+        PROFILE_TRAPEZOIDAL,  // Трапецеидальный профиль (классический)
+        PROFILE_S_CURVE       // S-образный профиль (плавный, рекомендуется)
     };
     
     // Параметры движения
     struct MotionParams {
         float max_velocity;     // Максимальная скорость (мм/с)
         float max_acceleration; // Максимальное ускорение (мм/с²)
-        float max_jerk;         // Максимальный рывок (мм/с³) для S-кривой
+        float max_jerk;         // Максимальный рывок (мм/с³) - для S-кривой
         ProfileType type;       // Тип профиля
     };
     
@@ -38,12 +33,8 @@ public:
         MotionParams params;    // Параметры движения
     };
     
-private:
-    MotionState state;          // Текущее состояние
-    MotionParams default_params;// Параметры по умолчанию
-    unsigned long last_update_us; // Время последнего обновления
-    
 public:
+    // Конструктор
     MotionController();
     
     // Инициализация с параметрами по умолчанию
@@ -69,11 +60,11 @@ public:
     void resume();
     
     // Геттеры
-    bool is_moving() const { return state.is_moving; }
-    bool is_paused() const { return state.is_paused; }
-    float get_progress() const { return state.progress; }
-    void get_current_pos(float& x, float& y, float& z);
-    void get_target_pos(float& x, float& y, float& z);
+    bool is_moving() const { return _state.is_moving; }
+    bool is_paused() const { return _state.is_paused; }
+    float get_progress() const { return _state.progress; }
+    void get_current_pos(float &x, float &y, float &z);
+    void get_target_pos(float &x, float &y, float &z);
     
     // Расчет расстояния между двумя точками
     static float distance(float x1, float y1, float z1, 
@@ -83,16 +74,18 @@ public:
     void set_default_params(float max_vel, float max_acc);
     
 private:
+    MotionState _state;
+    MotionParams _default_params;
+    
     // Реализации профилей траекторий
-    float compute_trapezoidal(float t, float total_time, float distance);
-    float compute_s_curve(float t, float total_time, float distance);
-    float compute_cycloidal(float t, float total_time, float distance);
+    float _compute_trapezoidal(float t, float total_time, float distance);
+    float _compute_s_curve(float t, float total_time, float distance);
     
     // Расчет времени движения
-    float calculate_time(float distance, const MotionParams& params);
+    float _calculate_time(float distance, const MotionParams &params);
     
     // Линейная интерполяция позиции
-    void interpolate_position(float t, float result[3]);
+    void _interpolate_position(float t, float result[3]);
 };
 
 #endif
