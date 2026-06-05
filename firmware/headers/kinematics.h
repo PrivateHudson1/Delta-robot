@@ -1,38 +1,47 @@
-// firmware/kinematics.cpp
-#include <math.h>
-#include "kinematics.h"
+// firmware/headers/kinematics.h
+#ifndef KINEMATICS_H
+#define KINEMATICS_H
 
-// Параметры робота (мм)
-const float r_base = 300.0;    // Радиус основания (шагающая окружность сервоприводов)
-const float r_plat = 100.0;    // Радиус подвижной платформы
-const float upper_leg = 450.0; // Длина верхнего плеча (ведущего)
-const float lower_leg = 800.0; // Длина нижнего штанг (параллелограмм)
+#include <Arduino.h>
 
-bool KinematicsEngine::inverse_kinematics(float point[3], float angles[3]) {
-  // Координаты в системе коорд инат робота (Z вниз)
-  float x = point[0];
-  float y = point[1];
-  float z = -point[2]; // Инверсия, если Z направлена вниз
-  
-  // Углы расположения плеч: 0°, 120°, 240°
-  float theta_p[3] = {0, 120.0 * M_PI / 180.0, 240.0 * M_PI / 180.0};
-  
-  for (int i = 0; i < 3; i++) {
-    // Координаты точки крепления верхнего рычага к подвижной платформе
-    float x_i = x - r_plat * cos(theta_p[i]);
-    float y_i = y - r_plat * sin(theta_p[i]);
-    float z_i = z; // Платформа горизонтальна
+class KinematicsEngine {
+public:
+    // Конструктор
+    KinematicsEngine();
     
-    // Расстояние от привода до точки на платформе
-    float R = sqrt(x_i*x_i + y_i*y_i + z_i*z_i);
-    float alpha = asin(z_i / R); // Угол возвышения
-    float gamma = acos((upper_leg*upper_leg + R*R - lower_leg*lower_leg) / (2*upper_leg*R));
+    // Инициализация параметров робота
+    void init(float base_radius, float platform_radius, 
+              float upper_leg_length, float lower_leg_length);
     
-    // Угол для текущего сервопривода
-    angles[i] = (alpha + gamma) * 180.0 / M_PI;
+    // Обратная кинематика: координаты (x,y,z) -> углы сервоприводов (degrees)
+    // point[0] = x, point[1] = y, point[2] = z (мм)
+    // angles[0-2] = углы для моторов 1,2,3 (градусы)
+    bool inverse_kinematics(float point[3], float angles[3]);
     
-    // Проверка сингулярности (выход за пределы рабочей зоны)
-    if (isnan(angles[i])) return false;
-  }
-  return true;
-}
+    // Прямая кинематика: углы сервоприводов -> координаты (x,y,z)
+    bool forward_kinematics(float angles[3], float point[3]);
+    
+    // Проверка, находится ли точка в рабочей зоне
+    bool is_reachable(float x, float y, float z);
+    
+    // Получение текущих параметров
+    void get_current_position(float &x, float &y, float &z);
+    void get_current_angles(float angles[3]);
+    
+private:
+    // Параметры робота (мм)
+    float _base_radius;      // Радиус основания
+    float _platform_radius;  // Радиус подвижной платформы
+    float _upper_leg;        // Длина верхнего рычага
+    float _lower_leg;        // Длина нижней штанги
+    
+    // Текущее состояние
+    float _current_angles[3];
+    float _current_position[3];
+    
+    // Вспомогательные методы
+    float normalize_angle(float angle);
+    float solve_angle_for_arm(float x, float y, float z, float theta_base);
+};
+
+#endif

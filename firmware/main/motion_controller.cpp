@@ -16,7 +16,7 @@ void MotionController::begin(float max_vel, float max_acc) {
     default_params.max_velocity = max_vel;
     default_params.max_acceleration = max_acc;
     default_params.max_jerk = max_acc * 10;  // Типичное ограничение рывка
-    default_params.type = PROFILE_S_CURVE;   // Плавное движение для промышленности
+    default_params.type = PROFILE_S_CURVE;   // Плавное движение 
     
     // Обнуление позиций
     for(int i = 0; i < 3; i++) {
