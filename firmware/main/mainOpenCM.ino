@@ -291,6 +291,7 @@ void process_commands() {
         }
     }
 }
+
 void emergency_stop() {
     emergency_active = true;
     
