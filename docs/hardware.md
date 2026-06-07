@@ -35,7 +35,7 @@ define DXL_DIR_PIN 22
 define ESTOP_PIN 2
 define BUZZER_PIN 3
 define VACUUM_PIN 4
-
+```
 
 ## Моторы Dynamixel
 Параметр              | Значение

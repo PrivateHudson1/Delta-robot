@@ -168,12 +168,13 @@ def crc16(data: bytes) -> int:
             else:
                 crc >>= 1
     return crc
+```
 
-
-Интеграция с Modbus
+## Интеграция с Modbus
 OpenCM изначально не поддерживает Modbus напрямую. Для этого используется python шлюз-конвертер:
- from pymodbus.server import StartTcpServer
 
+```python
+from pymodbus.server import StartTcpServer
 class ModbusGateway:
     def __init__(self, robot):
         self.robot = robot
@@ -187,3 +188,4 @@ class ModbusGateway:
     
     def _exec_move(self, value):
         self.robot.move_to(value, ...)
+```
